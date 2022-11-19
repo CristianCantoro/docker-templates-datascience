@@ -44,7 +44,7 @@ services:
 
   jupyterlab:
     container_name: jupyterlab
-    image: cristiancantoro/jupyterlab:latest
+    image: eut-bdds/jupyterlab:latest
     volumes:
       - jupyterlab_data:/home/jovyan/work
     ports:
