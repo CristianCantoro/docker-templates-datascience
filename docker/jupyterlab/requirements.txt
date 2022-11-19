@@ -1,0 +1,2 @@
+# This is a template requirements file
+# Do not remove it or Dockerfile build will fail

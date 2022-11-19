@@ -1,0 +1,56 @@
+version: '3.3'
+services:
+  mongodb:
+    container_name: mongodb
+    image: mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: mobius
+    volumes:
+      - mg_data:/data
+    ports:
+      - 27017:27017
+
+  postgres:
+    container_name: postgres
+    image: postgres:15
+    environment:
+      - POSTGRES_USER=shlink
+      - POSTGRES_DB=shlink-db
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U shlink -d shlink-db"]
+      interval: 5s
+      timeout: 2s
+      retries: 2
+    restart: on-failure
+
+  jupyterlab:
+    container_name: jupyterlab
+    image: cristiancantoro/jupyterlab:latest
+    volumes:
+      - jupyterlab_data:/home/jovyan/work
+    ports:
+      - 8888:8888
+
+volumes:
+  mg_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/Cristian.Consonni/Eurecat/Mobius/code/docker-compose/test/mg_data
+  pg_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/Cristian.Consonni/Eurecat/Mobius/code/docker-compose/test/mg_data
+  jupyterlab_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/Cristian.Consonni/Eurecat/Mobius/code/docker-compose/test/mobius

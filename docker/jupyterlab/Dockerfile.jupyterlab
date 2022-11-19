@@ -1,0 +1,75 @@
+#  Install requirements inside
+# https://jupyter-docker-stacks.readthedocs.io/en/latest/using/recipes.html
+FROM jupyter/base-notebook:6cc4a8596a0b
+
+# run as root
+USER root
+
+RUN apt-get update \
+    && apt-get install -y gcc libtool build-essential autoconf pkg-config \
+                          automake cmake python3-dev git-core jq \
+                          libffi-dev libcairo2 libcairo2-dev libzmq5 libc6 libc6-dev \
+                          nodejs texlive-latex-extra texlive-xetex \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# go back to notebook user
+USER ${NB_UID}
+
+RUN pip3 install --no-cache-dir --upgrade pip setuptools \
+    && fix-permissions "${CONDA_DIR}" \
+    && fix-permissions "/home/${NB_USER}"
+
+RUN pip3 install --upgrade \
+      bokeh \
+      ipywidgets \
+      jedi \
+      jupyter-lsp \
+      jupyter_bokeh \
+      jupyterlab-drawio \
+      jupyterlab-git \
+      jupyterlab_latex \
+      matplotlib \
+      nose \
+      numexpr \
+      numpy \
+      pandas \
+      patsy \
+      plotly \
+      python-lsp-server[all] \
+      requests \
+      scikit-image \
+      scikit-learn \
+      scipy \
+      seaborn \
+      sympy \
+    && fix-permissions "${CONDA_DIR}" \
+    && fix-permissions "/home/${NB_USER}"
+
+# install jupyterlab extension
+#
+# increase memory for jupyterlab-spreadsheet
+#   https://github.com/jupyterlab/jupyterlab/issues/
+#     4325#issuecomment-382173759
+RUN NODE_OPTIONS=--max-old-space-size=4096 \
+    jupyter labextension install \
+      @jupyter-widgets/jupyterlab-manager \
+      jupyterlab-drawio \
+      jupyterlab-plotly \
+      @jupyterlab/latex \
+      @jupyterlab/git \
+      @krassowski/jupyterlab-lsp
+
+# install from requirements.txt file
+# cioy requirements file
+COPY --chown=${NB_UID}:${NB_GID} requirements.txt /tmp/
+
+# install requirements if file is not empty
+RUN [ "$(grep -c '^[^#]' /tmp/requirements.txt)" -gt 0 ] \
+      && pip install --no-cache-dir --requirement /tmp/requirements.txt \
+      && fix-permissions "${CONDA_DIR}" \
+      && fix-permissions "/home/${NB_USER}" \
+      || true
+
+# copy configurations
+COPY --chown=${NB_UID}:${NB_GID} config/ "/home/${NB_USER}/.jupyter/"
