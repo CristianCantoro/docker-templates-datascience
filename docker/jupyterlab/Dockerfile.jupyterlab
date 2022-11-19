@@ -6,12 +6,43 @@ FROM jupyter/base-notebook:6cc4a8596a0b
 USER root
 
 RUN apt-get update \
-    && apt-get install -y gcc libtool build-essential autoconf pkg-config \
-                          automake cmake python3-dev git-core jq \
-                          libffi-dev libcairo2 libcairo2-dev libzmq5 libc6 libc6-dev \
-                          nodejs texlive-latex-extra texlive-xetex \
+    && apt-get install -y \
+      autoconf automake autopoint autotools-dev binutils binutils-common \
+      binutils-x86-64-linux-gnu bsdextrautils build-essential bzip2 \
+      ca-certificates cmake cpp cpp-11 debhelper debugedit dh-autoreconf \
+      dh-python dh-strip-nondeterminism docutils-common dpkg-dev dwz file \
+      g++ g++-11 gcc gcc-11 gcc-11-base gettext gettext-base git-core \
+      groff-base intltool-debian jq libarchive-zip-perl libasan6 libatomic1 \
+      libbinutils libbsd0 libc-dev-bin libc6 libc6-dev libcairo2 \
+      libcairo2-dev libcc1-0 libcrypt-dev libctf-nobfd0 libctf0 \
+      libdebhelper-perl libdpkg-perl libdw1 libedit2 libelf1 libexpat1-dev \
+      libffi-dev libfile-stripnondeterminism-perl libgcc-11-dev \
+      libgdbm-compat4 libgdbm6 libgomp1 libicu70 libisl23 libitm1 \
+      libjs-jquery libjs-sphinxdoc libjs-underscore libjson-perl \
+      libldap-2.5-0 libllvm14 liblsan0 libmagic-mgc libmagic1 libmd0 libmpc3 \
+      libmpfr6 libnsl-dev libperl5.34 libpipeline1 libpq-dev libpq5 \
+      libpython3-all-dev libpython3-dev libpython3-stdlib libquadmath0 \
+      libsasl2-2 libsasl2-modules-db libsigsegv2 libssl-dev libstdc++-11-dev \
+      libsub-override-perl libtirpc-dev libtool libtool libtsan0 libubsan1 \
+      libuchardet0 libxml2 libxslt1.1 libzmq5 linux-libc-dev locales \
+      lto-disabled-list m4 make man-db netbase nodejs openssl patch perl \
+      perl-modules-5.34 pkg-config po-debconf python3-dev rpcsvc-proto \
+      sgml-base sphinx-common ssl-cert texlive-latex-extra texlive-xetex \
+      tzdata ucf xml-core xz-utils zlib1g-dev \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
+# install from packages.txt file
+COPY --chown=${NB_UID}:${NB_GID} packages.txt /tmp/
+
+# install requirements if file is not empty
+RUN [ "$(grep -c '^[^#]' /tmp/packages.txt)" -gt 0 ] \
+      apt-get update \
+      && apt-get install -y \
+      &&  apt-get install $(grep -v "^#" /tmp/packages.txt  | tr '\n' ' ') \
+      && apt-get clean \
+      && rm -rf /var/lib/apt/lists/* \
+      || true
 
 # go back to notebook user
 USER ${NB_UID}
@@ -36,6 +67,8 @@ RUN pip3 install --upgrade \
       pandas \
       patsy \
       plotly \
+      psicopg2 \
+      pymongo \
       python-lsp-server[all] \
       requests \
       scikit-image \
@@ -61,7 +94,7 @@ RUN NODE_OPTIONS=--max-old-space-size=4096 \
       @krassowski/jupyterlab-lsp
 
 # install from requirements.txt file
-# cioy requirements file
+# copy requirements file
 COPY --chown=${NB_UID}:${NB_GID} requirements.txt /tmp/
 
 # install requirements if file is not empty
