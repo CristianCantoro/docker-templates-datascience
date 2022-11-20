@@ -67,7 +67,7 @@ RUN pip3 install --upgrade \
       pandas \
       patsy \
       plotly \
-      psicopg2 \
+      psycopg2 \
       pymongo \
       python-lsp-server[all] \
       requests \
