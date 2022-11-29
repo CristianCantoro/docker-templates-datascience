@@ -1,6 +1,7 @@
 # Docker Templates for Data Science
 
-Docker and Docker Compose templates for Data Science applications.
+A collection of Docker and Docker Compose templates for Data Science
+applications.
 
 ## Docker
 
