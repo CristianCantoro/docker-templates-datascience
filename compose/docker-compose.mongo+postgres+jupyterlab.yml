@@ -46,7 +46,8 @@ services:
     container_name: jupyterlab
     image: eut-bdds/jupyterlab:latest
     volumes:
-      - jupyterlab_data:/home/jovyan/work
+      - jupyterlab_notebooks:/home/jovyan/work
+      - jupyterlab_data:/home/jovyan/data
     ports:
       - 8888:8888
     networks:
@@ -70,3 +71,9 @@ volumes:
       type: none
       o: bind
       device: /mnt/data/jupyterlab
+  jupyterlab_notebooks:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/ubuntu/jupyterlab
